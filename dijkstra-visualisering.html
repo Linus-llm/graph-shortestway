@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="da">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dijkstra · Fra by til by</title>
+<style>
+:root{font-family:Inter,Segoe UI,sans-serif;color:#172d39;background:#f2f5f4;font-size:15px}*{box-sizing:border-box}body{margin:0}main{max-width:1440px;margin:auto;padding:36px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}.eyebrow{font-size:11px;letter-spacing:2px;color:#647873;font-weight:700}h1{font-size:36px;letter-spacing:-1.5px;margin:8px 0}p{line-height:1.6;color:#52656c}header p{margin:0}.tag{padding:10px 15px;border:1px solid #cbd9d4;border-radius:30px;font-size:12px}.controls{display:flex;gap:14px;align-items:end;flex-wrap:wrap;background:white;border:1px solid #dce5e1;border-radius:16px;padding:18px;margin-bottom:20px}label{font-size:12px;font-weight:600;display:grid;gap:7px}select,button{font:inherit;padding:11px 16px;border-radius:9px;border:1px solid #d2ddd8;background:white;color:inherit}button{cursor:pointer;font-weight:600}button:hover{background:#edf3f0}button:disabled{opacity:.4;cursor:default}button.primary{background:#163f36;color:white;border-color:#163f36}.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:20px}.card{background:white;border:1px solid #dce5e1;border-radius:16px;overflow:hidden}.cardhead{padding:20px 24px;border-bottom:1px solid #edf0ee;display:flex;align-items:center;justify-content:space-between}h2{font-size:16px;margin:0}.small{font-size:12px;color:#647873}.legend{display:flex;flex-wrap:wrap;gap:18px;padding:16px 24px;font-size:12px}.dot{width:10px;height:10px;display:inline-block;border-radius:50%;margin-right:5px}.red{background:#f49b98}.yellow{background:#f8d566}.green{background:#69caa0}.graph{width:100%;height:auto;display:block;background:radial-gradient(#dce6e1 .7px,transparent .7px);background-size:18px 18px}.edge{stroke:#b3c3c0;stroke-width:2;fill:none}.edge.active{stroke:#ca960f;stroke-width:4}.edge.path{stroke:#159963;stroke-width:5}.weight rect{fill:#fff;stroke:#e0e8e4}.weight text{font-size:12px;fill:#52656c;text-anchor:middle}.node circle{fill:#f7faf9;stroke:#9dafaa;stroke-width:2}.node.visited circle{fill:#fbd2d0;stroke:#ce5752}.node.candidate circle{fill:#fff0b2;stroke:#d4a728}.node.path circle{fill:#bcead1;stroke:#159963}.node.current circle{stroke:#172d39;stroke-width:4}.node text{text-anchor:middle;font-size:13px;fill:#172d39;font-weight:600;pointer-events:none}.node .distance{font-size:11px;font-weight:400}.node .badge{font-size:10px;fill:#657a72}.explain{padding:20px 24px;border-top:1px solid #edf0ee;min-height:135px}.explain h3{margin:0 0 7px;font-size:17px}.explain p{margin:0}.side{display:grid;gap:20px;align-content:start}.result{padding:22px;background:#143e34;color:white}.result .small{color:#b6d4c9}.total{font-size:34px;font-weight:700;margin:8px 0}.route{font-size:13px;line-height:1.7;color:#e0f2e9}.queue{padding:16px 22px;display:flex;gap:8px;flex-wrap:wrap;min-height:65px}.chip{background:#fff4cb;border:1px solid #eddc96;padding:6px 9px;border-radius:6px;font-size:12px}.chip.stale{background:#f0f2f1;color:#71817b;text-decoration:line-through}table{border-collapse:collapse;width:100%;font-size:12px}td,th{text-align:left;padding:10px 15px;border-bottom:1px solid #edf0ee}th{font-size:10px;text-transform:uppercase;color:#647873}tr.visited{background:#fff1f0}tr.candidate{background:#fff9e4}tr.path{background:#e7f8ee}.note{font-size:12px;margin:18px 0 0;color:#647873}details{margin-top:20px;padding:16px 20px;background:#e9eeeb;border-radius:12px;font-size:12px;line-height:1.7}summary{cursor:pointer;font-weight:600}kbd{border:1px solid #cbd9d4;padding:2px 5px;border-radius:4px}@media(max-width:1000px){.layout{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr}.side .card:last-child{grid-column:1/-1}}@media(max-width:600px){main{padding:16px}header{display:block}.tag{display:none}h1{font-size:29px}.side{grid-template-columns:1fr}.controls{gap:10px}.controls label{flex:1}select{width:100%}.legend{gap:10px;padding:12px}.cardhead{padding:16px}}
+
+.grey{background:#465158}.node.visited circle{fill:#465158;stroke:#28353d}.node.visited text:not(.badge){fill:white}.node.path text:not(.badge){fill:#172d39}tr.visited{background:#e2e6e8}.queueCard{margin-bottom:14px;border:2px solid #b5c8bd}.queue{padding:20px;gap:12px;min-height:90px}.chip{padding:13px 18px;font-size:15px;display:grid;gap:6px;min-width:130px}.chip:first-child{border:2px solid #a98516}.chip small{font-size:10px;letter-spacing:1px}.chip strong{font-size:20px}.queueChange{padding:14px 22px;background:#f5f7f5;border-top:1px solid #e0e8e4;font-size:14px}.queueCard p{margin:6px 0 0}.node.current circle{stroke:#0a1720;stroke-width:5}input{max-width:260px}.error{color:#9d392d}
+</style>
+<main>
+<header><div><div class="eyebrow">ALGORITMER / DIJKSTRA</div><h1>Den korteste vej, ét valg ad gangen.</h1><p>Følg afstanden, køen og de valg, der fører frem til målet.</p></div><span class="tag" id="graphInfo">Optagelse fra din Java-metode</span></header>
+<div class="controls">
+<label>1. Vælg optagelse fra Java<input id="load" type="file" accept=".json,application/json"></label><span id="endpoints" class="small">Kør Dijkstra.main, og vælg dijkstra-trace.json her.</span>
+<button id="back" disabled>← Forrige</button><button class="primary" id="next" disabled>Næste trin →</button><button id="play" disabled>Afspil</button><button id="reset" disabled>Nulstil</button><label>Tempo<select id="speed"><option value="1600">Roligt</option><option value="800">Hurtigt</option><option value="3000">Ekstra roligt</option></select></label>
+<span class="small">Genvej: <kbd>Y</kbd> / <kbd>→</kbd></span>
+</div>
+<section class="card queueCard"><div class="cardhead"><div><h2>Prioritetskø · queue</h2><p class="small">En kopi af Javas kø, vist i poll-rækkefølge. Første post vælges næste gang — efter naboerne er undersøgt.</p></div><span id="queueCount" class="tag">0 poster</span></div><div id="queue" class="queue"></div><div id="queueChange" class="queueChange" aria-live="polite">Indlæs en optagelse for at se køens ændringer.</div></section><p id="loadStatus" class="small" role="status">Ingen optagelse indlæst. HTML-siden beregner ingen ruter selv.</p><div class="layout"><section class="card"><div class="cardhead"><h2>Dit vejnet</h2><span class="small" id="step"></span></div><div class="legend"><span><i class="dot grey"></i>Visited</span><span><i class="dot yellow"></i>Nabokandidat / i kø</span><span><i class="dot green"></i>Korteste sti</span><span>◎ Sort kant: aktuel by</span></div><svg id="graph" class="graph" viewBox="0 0 850 610" role="img" aria-label="Rettet graf med dine byer og kilometer på hver vej"></svg><div class="explain" aria-live="polite"><h3 id="title"></h3><p id="message"></p></div></section>
+<aside class="side"><section class="card result"><div class="small" id="resultLabel">KORTESTE VEJ TIL MÅLET</div><div class="total" id="total">— km</div><div class="route" id="route"></div></section><section class="card"><div class="cardhead"><h2>Algoritmens hukommelse</h2></div><table><thead><tr><th>By</th><th>Km fra start</th><th>Forrige</th></tr></thead><tbody id="table"></tbody></table></section></aside></div>
+<p class="note">Pile viser vejens retning. Tallene på vejene er kilometer mellem byerne; tallene ved noderne er bedste kendte samlede afstand fra start. Placeringen er skematisk.</p>
+<details><summary>Sådan bruges optagelsen</summary><p>1. Kør main i Dijkstra.java. Konsollen viser placeringen af dijkstra-trace.json.<br>2. Vælg JSON-filen øverst på denne side.<br>3. Brug Næste trin eller Afspil. Forrige og Nulstil afspiller den samme optagelse igen.</p><p>Java optager de faktiske dist, prev, visited og køposter ved hvert valg. Den grønne rute rekonstrueres i Java via metodens prev. For at ændre start, mål eller vejnet ændrer du Java-koden og kører den igen. Indlæs derefter den nye fil.</p><p>Visited bliver mørkegrå præcis ved visited.add i din metode. Målet bliver grønt ved break og behøver ikke være i visited. Køen vises ved at polle en kopi af Javas PriorityQueue; den oprindelige kø ændres ikke. Dubletter bevares, og allerede besøgte køposter vises overstreget. Ved ens afstande følger rækkefølgen den konkrete Java-optagelse. Optageren medtager grafen, der kan nås fra start og mål.</p></details>
+</main>
+<script>
+'use strict';
+let cities=[],positions=[],roads=[],source=0,target=0;
+const $=id=>document.getElementById(id), km=v=>Number.isFinite(v)?v+' km':'∞';
+const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const titles={start:'Startbyen lægges i kø',poll:'queue.poll() · vælg næste by',visited:'visited.add(currentNode)',neighbor:'Undersøg naboen',enqueue:'queue.add() · en kortere vej',keep:'Behold den kendte afstand',skip:'Spring over',found:'Rute fundet via prev',unreachable:'Ingen rute til målet'};
+let frames=[],index=0,timer=null;
+function render(){
+ if(!frames.length){for(const id of ['back','next','play','reset'])$(id).disabled=true;$('title').textContent='Start med at indlæse din Java-optagelse';$('message').textContent='Vælg dijkstra-trace.json øverst på siden. Derefter vises vejnettet og køen, og afspilningsknapperne bliver aktive.';return;}
+ const s=frames[index];s.edge=s.neighbor===null?null:roads.findIndex(r=>r[0]===s.current&&r[1]===s.neighbor);if(s.edge===-1)s.edge=null;
+ $('step').textContent=`Trin ${index+1} / ${frames.length}`;$('title').textContent=titles[s.event]||s.event;$('message').textContent=s.message;
+ const visited=new Set(s.visited),path=new Set(s.path),candidate=new Set(s.queue.filter(x=>!visited.has(x.node)).map(x=>x.node));
+ if(s.edge!==null&&!visited.has(roads[s.edge][1]))candidate.add(roads[s.edge][1]);
+ const status=i=>path.has(i)?'path':visited.has(i)?'visited':candidate.has(i)?'candidate':'';
+ let svg='<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker></defs>';
+ roads.forEach(([a,b,w],i)=>{const [x,y]=positions[a],[xx,yy]=positions[b],d=Math.hypot(xx-x,yy-y),ux=(xx-x)/d,uy=(yy-y)/d;const onPath=s.path.some((n,j)=>n===a&&s.path[j+1]===b);svg+=`<path class="edge ${onPath?'path':s.edge===i?'active':''}" d="M${x+ux*36},${y+uy*36} L${xx-ux*40},${yy-uy*40}" marker-end="url(#arrow)"/><g class="weight" transform="translate(${(x+xx)/2},${(y+yy)/2})"><rect x="-24" y="-12" width="48" height="24" rx="8"/><text y="4">${w} km</text></g>`;});
+ cities.forEach((name,i)=>{const [x,y]=positions[i];svg+=`<g class="node ${status(i)} ${s.current===i?'current':''}" transform="translate(${x},${y})"><title>${esc(name)}: ${km(s.dist[i])}${visited.has(i)?', visited':''}</title><circle r="35"/><text y="-2">${esc(name)}</text><text class="distance" y="16">${km(s.dist[i])}</text><text class="badge" y="-45">${i===source&&i===target?'START / MÅL':i===source?'START':i===target?'MÅL':''}</text></g>`;});
+ $('graph').innerHTML=svg;
+ $('queue').innerHTML=s.queue.length?s.queue.map((q,i)=>`<span class="chip ${visited.has(q.node)?'stale':''}"><small>${i===0?'NÆSTE I KØEN':'KØPOST'}</small>${esc(cities[q.node])}<strong>${q.dist} km</strong></span>`).join(''):'<span class="small">Køen er tom</span>';
+ $('queueCount').textContent=s.queue.length+' poster';
+ $('queueChange').textContent=s.event==='enqueue'?'TILFØJET: '+cities[s.neighbor]+' med '+km(s.dist[s.neighbor]):s.event==='poll'?'TAGET UD: '+cities[s.current]+' · '+s.message:s.event==='start'?'TILFØJET: '+cities[source]+' med 0 km':s.done?'Afspilningen er slut. Køen viser de poster, der var tilbage i Java.':'Køen ændres ikke i dette trin.';
+ $('table').innerHTML=cities.map((name,i)=>`<tr class="${status(i)}"><td>${esc(name)}${visited.has(i)?' ✓':''}</td><td>${km(s.dist[i])}</td><td>${s.prev[i]===null?'—':esc(cities[s.prev[i]])}</td></tr>`).join('');
+ $('resultLabel').textContent=s.done?(s.path.length?'KORTESTE VEJ FUNDET':'INGEN RUTE'):'BEDSTE KENDTE AFSTAND TIL MÅLET';
+ $('total').textContent=Number.isFinite(s.dist[target])?km(s.dist[target]):'— km';
+ $('route').textContent=s.path.length?s.path.map((n,j)=>cities[n]+(j<s.path.length-1?' — '+roads.find(r=>r[0]===n&&r[1]===s.path[j+1])[2]+' km → ':'')).join(''):s.done?'Målet kan ikke nås via de rettede veje.':'Stien bliver grøn, når målet vælges fra køen.';
+ $('back').disabled=index===0;$('next').disabled=index===frames.length-1;$('play').disabled=index===frames.length-1;
+}
+function stop(){clearInterval(timer);timer=null;$('play').textContent='Afspil';}
+function next(){if(index<frames.length-1)index++;if(index===frames.length-1)stop();render();}
+function reset(){stop();index=0;render();}
+$('next').onclick=()=>{stop();next();};$('back').onclick=()=>{stop();index=Math.max(0,index-1);render();};$('reset').onclick=reset;
+
+$('play').onclick=()=>{if(timer){stop();return;}$('play').textContent='Pause';timer=setInterval(next,+$('speed').value);};
+$('speed').onchange=()=>{if(timer){stop();$('play').click();}};
+document.addEventListener('keydown',e=>{if(/SELECT|INPUT|BUTTON/.test(e.target.tagName))return;if(e.key.toLowerCase()==='y'||e.key==='ArrowRight'){e.preventDefault();stop();next();}else if(e.key==='ArrowLeft'){$('back').click();}});
+// Import only recorded state. There is no Dijkstra implementation in this page.
+function validateTrace(data){
+ if(data.version!==1||!Array.isArray(data.cities)||!data.cities.length||!data.cities.every(n=>typeof n==='string'))throw Error('Ugyldigt byformat');
+ const n=data.cities.length,id=v=>Number.isInteger(v)&&v>=0&&v<n,optional=v=>v===null||id(v),distance=v=>Number.isSafeInteger(v)&&v>=0;
+ if(!id(data.source)||!id(data.target)||!Array.isArray(data.roads)||!data.roads.every(r=>Array.isArray(r)&&r.length===3&&id(r[0])&&id(r[1])&&distance(r[2])))throw Error('Ugyldigt vejnet');
+ if(!Array.isArray(data.frames)||!data.frames.length||!data.frames.every(s=>s&&typeof s.event==='string'&&typeof s.message==='string'&&typeof s.done==='boolean'&&optional(s.current)&&optional(s.neighbor)&&Array.isArray(s.dist)&&s.dist.length===n&&s.dist.every(v=>v===null||distance(v))&&Array.isArray(s.prev)&&s.prev.length===n&&s.prev.every(optional)&&Array.isArray(s.visited)&&s.visited.every(id)&&Array.isArray(s.path)&&s.path.every(id)&&Array.isArray(s.queue)&&s.queue.every(q=>q&&id(q.node)&&distance(q.dist))))throw Error('Ugyldige trin i optagelsen');
+ return data;
+}
+function loadTrace(data){
+ validateTrace(data);stop();cities=data.cities;roads=data.roads;source=data.source;target=data.target;
+ const known={'Hillerød':[180,130],'Helsinge':[430,65],'Helsingør':[690,145],'København':[670,510],'Lyngby':[650,340],'Søborg':[360,400],'Brøndby':[160,530],'Allerød':[140,300],'Birkerød':[360,270]};
+ const useKnown=cities.every(n=>Object.hasOwn(known,n));
+ positions=cities.map((name,i)=>useKnown?known[name]:[425+300*Math.cos(i/cities.length*2*Math.PI),305+230*Math.sin(i/cities.length*2*Math.PI)]);
+ frames=data.frames.map(s=>({...s,dist:s.dist.map(v=>v===null?Infinity:v)}));index=0;
+ $('endpoints').textContent=cities[source]+' → '+cities[target];$('graphInfo').textContent=cities.length+' byer · '+roads.length+' rettede veje';
+ $('loadStatus').className='small';$('loadStatus').textContent='Java-optagelse indlæst · '+frames.length+' trin. Ingen genberegning i browseren.';$('reset').disabled=false;render();
+}
+$('load').onchange=async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{loadTrace(JSON.parse(await file.text()));}
+ catch(error){$('loadStatus').className='small error';$('loadStatus').textContent='Kunne ikke indlæse filen: '+error.message;}
+ e.target.value='';
+};
+reset();
+</script>
+</html>

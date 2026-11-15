@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A* · See the heuristic at work</title>
+<style>
+:root{font:15px 'Segoe UI',sans-serif;color:#172d39;background:#f2f5f4}*{box-sizing:border-box}body{margin:0}main{max-width:1480px;margin:auto;padding:32px}h1{font-size:36px;letter-spacing:-1px;margin:8px 0}h2{font-size:17px;margin:0}p{line-height:1.6;color:#52656c}.eyebrow{font-size:11px;letter-spacing:2px;color:#647873;font-weight:700}.card{background:white;border:1px solid #dce5e1;border-radius:15px;overflow:hidden;margin:18px 0}.head{padding:18px 22px;border-bottom:1px solid #e5ece8;display:flex;gap:16px;justify-content:space-between;align-items:center}.head p{margin:6px 0 0;font-size:13px}.controls{padding:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}label{font-size:12px;font-weight:600;display:grid;gap:8px}button,select{font:inherit;border:1px solid #c9d7d0;border-radius:8px;padding:11px 15px;background:white;color:inherit}button{cursor:pointer}button:disabled{opacity:.4;cursor:default}button.primary{background:#163f36;color:white}input[type=file]{max-width:260px}small,.small{font-size:12px;color:#647873}.formula{display:flex;gap:12px;flex-wrap:wrap;margin:22px 0}.formula span{padding:13px 18px;border-radius:9px;background:#e4ece7}.formula .priority{background:#173e34;color:white}.queue{display:flex;gap:12px;flex-wrap:wrap;padding:20px;min-height:100px}.chip{display:grid;gap:6px;min-width:152px;border:1px solid #d7b854;border-radius:9px;padding:12px 16px;background:#fff2bd}.chip:first-child{border:2px solid #9c7910}.chip strong{font-size:24px}.chip small{font-size:10px;letter-spacing:1px}.chip.stale{background:#e4e8e8;color:#647078;text-decoration:line-through}.queue-card{border:2px solid #b5c8bd}.decision{padding:16px 22px;background:#f5f8f5;line-height:1.6;border-top:1px solid #e0e8e4}.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px}.layout .card{margin-top:0}.legend{padding:14px 20px;display:flex;gap:15px;flex-wrap:wrap;font-size:12px}.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}.grey{background:#465158}.yellow{background:#ffe38a}.green{background:#67c998}.wall{background:#d5ddd8}.grid{width:100%;display:block;background:#fafcfb}.cell rect{fill:white;stroke:#d4ddd8;stroke-width:1}.cell.wall rect{fill:#d5ddd8}.cell.visited rect{fill:#465158}.cell.candidate rect{fill:#ffe38a}.cell.path rect{fill:#67c998}.cell.current rect{stroke:#111f2a;stroke-width:4}.cell.neighbor rect{stroke:#407ca5;stroke-width:3}.cell text{font-size:10px;text-anchor:middle;fill:#172d39;pointer-events:none}.cell.visited text{fill:white}.cell.path text{fill:#172d39}.explain{padding:18px 22px;border-top:1px solid #e0e8e4}.explain h2{margin-bottom:8px}.explain p{margin:0}.result{padding:22px;background:#143e34;color:white}.result p,.result small{color:#d6ece0}.total{font-size:36px;font-weight:700;margin:12px 0}.selected{padding:18px 22px;line-height:1.8}.tablewrap{overflow:auto;max-height:380px}table{width:100%;font-size:12px;border-collapse:collapse}td,th{text-align:left;padding:9px;border-bottom:1px solid #e7eeea}th{position:sticky;top:0;background:white}tr.visited{background:#e3e7e9}tr.candidate{background:#fff6d8}tr.path{background:#e4f7ec}.segments{padding:0 22px 18px;max-height:250px;overflow:auto;font-size:12px;line-height:1.8}details{padding:18px;background:#e6ede8;border-radius:12px;font-size:13px;line-height:1.7}summary{cursor:pointer;font-weight:600}.error{color:#a23925}@media(max-width:1100px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;gap:16px}}@media(max-width:600px){main{padding:14px}h1{font-size:28px}.side{display:block}.head{padding:15px}.formula{gap:8px}.formula span{padding:10px;font-size:12px}}
+</style>
+<main>
+<header><div class="eyebrow">ALGORITHMS / YOUR JAVA A*</div><h1>See the heuristic at work.</h1><p>Replay the choices made by <code>findShortestPathAstar</code>, using its actual queue, visited set and prev map.</p></header>
+<div class="formula"><span><b>g</b> = accumulated edge weights</span><span><b>h</b> = Manhattan estimate to goal</span><span class="priority"><b>f = g + h</b> = queue priority</span></div>
+<section class="card controls">
+<label>1. Load your Java recording<input id="load" type="file" accept=".json,application/json"></label><span class="small" id="endpoints">Run Astar.main, then choose astar-trace.json.</span>
+<button id="back" disabled>← Previous</button><button id="next" class="primary" disabled>Next step →</button><button id="nextChoice" disabled>Next choice</button><button id="finish" disabled>Show result</button><button id="play" disabled>Play</button><button id="reset" disabled>Restart</button>
+<label>Speed<select id="speed"><option value="1200">Normal</option><option value="120">Fast</option><option value="2500">Slow</option></select></label>
+<span class="small">Keyboard: Y / → / ←</span>
+</section>
+<p id="loadStatus" class="small" role="status">No recording loaded. Select the JSON file above to enable playback.</p>
+<section class="card queue-card"><div class="head"><div><h2>Priority queue · lowest f first</h2><p>Cards show actual queue entries in Java poll order. Equal f values follow this recorded execution.</p></div><span id="queueCount" class="small">0 entries</span></div><div id="queue" class="queue"></div><div id="decision" class="decision" aria-live="polite">A* chooses the lowest g + h, including the estimate to the goal.</div></section>
+<div class="layout"><section class="card"><div class="head"><h2>Your grid</h2><span id="step" class="small">No steps loaded</span></div><div class="legend"><span><i class="dot grey"></i>Visited</span><span><i class="dot yellow"></i>In priority queue</span><span><i class="dot green"></i>Found route</span><span><i class="dot wall"></i>Wall</span><span>Black outline: current · blue: neighbor</span></div><svg id="grid" class="grid" viewBox="0 0 890 690" role="img" aria-label="A star grid recording"></svg><div class="explain"><h2 id="title">Start by loading your recording</h2><p id="message">Choose astar-trace.json above. No search algorithm runs in this HTML page.</p></div></section>
+<aside class="side"><section class="card result"><small id="resultLabel">ROUTE TO GOAL</small><div id="total" class="total">—</div><p id="route">The route turns green when your method polls the goal.</p></section><section class="card"><div class="head"><h2>Selected queue entry</h2></div><div id="selected" class="selected">No entry polled yet.</div></section><section class="card"><div class="head"><h2>dist and prev</h2><span class="small">row, column</span></div><div class="tablewrap"><table><thead><tr><th>Cell</th><th>g</th><th>h</th><th>f</th><th>prev</th></tr></thead><tbody id="table"></tbody></table></div></section><section class="card"><div class="head"><h2>Route segments</h2></div><div id="segments" class="segments">Waiting for the goal.</div></section></aside></div>
+<p class="small">Coordinates are zero-based (row, column). Each cell shows g / h and f. Edge weights are taken from Java; the demo uses weight 1 per move. h is an estimate, not distance already travelled.</p>
+<details><summary>How to run and interpret this visualization</summary><p>Run <code>Astar.main</code>, then select the generated <code>astar-trace.json</code>. The console prints its full path. After a Java change, run main again and select the new file. Previous and Restart replay the same recording.</p><p>The recorder polls a copy of the real PriorityQueue and reads g and f from CityNodeWithDistA. It does not modify the original queue, dist, prev or visited. Grey appears at your visited.add call. The goal check happens before that call, so the goal need not enter visited. Green follows the final prev chain. Duplicate and stale queue entries are preserved.</p><p>Your grid uses four-direction moves with weight 1 and a Manhattan heuristic. Walls can force detours, so h can be lower than the actual distance remaining. The final route cost is the sum of edge weights (g), not f values along the path.</p></details>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+let data=null,frames=[],index=0,timer=null;
+const num=v=>v===null?'∞':String(v);
+const label=id=>id===null?'—':`(${data.nodes[id].row}, ${data.nodes[id].col})`;
+const titles={start:'Add the start node',poll:'queue.poll() · choose lowest f',visited:'visited.add(currentNode)',neighbor:'Inspect a neighbor',enqueue:'Update g and prev · enqueue g + h',keep:'Keep the existing distance',skip:'Skip a visited node',found:'Goal reached · follow prev',unreachable:'No route found'};
+function stop(){clearInterval(timer);timer=null;$('play').textContent='Play';}
+function render(){
+ if(!frames.length)return;
+ const s=frames[index],current=s.selected?.node??null;
+ const visited=new Set(s.visited),path=new Set(s.path),pending=new Set(s.queue.map(q=>q.node));
+ const status=i=>path.has(i)?'path':visited.has(i)?'visited':pending.has(i)?'candidate':'';
+ $('title').textContent=titles[s.event]||s.event;$('message').textContent=s.message;$('step').textContent=`Step ${index+1} / ${frames.length}`;
+ $('queueCount').textContent=`${s.queue.length} entries`;
+ $('queue').innerHTML=s.queue.length?s.queue.map((q,i)=>`<div class="chip ${visited.has(q.node)?'stale':''}"><small>${i===0?'NEXT TO POLL':'QUEUE ENTRY'}</small><b>${label(q.node)}</b><span>g ${q.g} + h ${q.h}</span><strong>f = ${q.f}</strong></div>`).join(''):'<span class="small">Queue is empty.</span>';
+ $('selected').textContent=s.selected?`${label(current)} · g ${s.selected.g} + h ${s.selected.h} = f ${s.selected.f}`:'No entry selected in this step.';
+ let decision='Queue unchanged in this step.';
+ if(s.event==='start')decision=`Enqueued ${label(data.source)} with g = 0 and h = ${data.nodes[data.source].h}.`;
+ if(s.event==='enqueue')decision=`Enqueued ${label(s.neighbor)}: g ${s.dist[s.neighbor]} + h ${data.nodes[s.neighbor].h} = f ${s.dist[s.neighbor]+data.nodes[s.neighbor].h}. Queue ordered by f.`;
+ if(s.event==='poll'){
+  const q=s.selected,prior=frames[index-1]?.queue??[],lowerG=prior.find(e=>e.g<q.g);
+  decision=`Polled ${label(q.node)}: g ${q.g} + h ${q.h} = f ${q.f}, the lowest f in the queue before poll.`;
+  if(lowerG)decision+=` ${label(lowerG.node)} had a lower g (${lowerG.g}), but f = ${lowerG.f}. A* compares f, not g alone.`;
+ }
+ if(s.done)decision=s.path.length?'Goal polled. The green route is reconstructed from Java prev. Remaining queue entries are preserved.':'Queue exhausted without reaching the goal.';
+ $('decision').textContent=decision;
+ const cells=new Map(data.nodes.map((n,i)=>[`${n.row},${n.col}`,i]));
+ const rows=data.grid.length,cols=data.grid[0].length,size=50,pad=30;
+ $('grid').setAttribute('viewBox',`0 0 ${cols*size+pad*2} ${rows*size+pad*2}`);
+ let svg='';
+ for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+  const id=cells.get(`${r},${c}`),wall=data.grid[r][c]===1,st=id===undefined?'':status(id),node=id===undefined?null:data.nodes[id];
+  const extra=id!==undefined&&id===current?'current':id!==undefined&&id===s.neighbor?'neighbor':'';
+  const tag=id===data.source?'S':id===data.target?'G':'';
+  svg+=`<g class="cell ${wall?'wall':st} ${extra}" transform="translate(${pad+c*size},${pad+r*size})"><title>(${r}, ${c})${node?`: g ${num(s.dist[id])}, h ${node.h}, f ${s.dist[id]===null?'∞':s.dist[id]+node.h}`:wall?' wall':' unexplored'}</title><rect x="2" y="2" width="46" height="46" rx="5"/>${node?`<text x="25" y="14">${tag||`${r},${c}`}</text><text x="25" y="29">${num(s.dist[id])} / ${node.h}</text><text x="25" y="42">f ${s.dist[id]===null?'∞':s.dist[id]+node.h}</text>`:''}</g>`;
+ }
+ $('grid').innerHTML=svg;
+ $('table').innerHTML=data.nodes.map((n,i)=>`<tr class="${status(i)}"><td>${label(i)}</td><td>${num(s.dist[i])}</td><td>${n.h}</td><td>${s.dist[i]===null?'∞':s.dist[i]+n.h}</td><td>${label(s.prev[i])}</td></tr>`).join('');
+ $('resultLabel').textContent=s.done?(s.path.length?'SHORTEST ROUTE FOUND':'NO ROUTE'):'BEST KNOWN g TO GOAL';
+ $('total').textContent=s.dist[data.target]===null?'—':`${s.dist[data.target]} total weight`;
+ $('route').textContent=s.path.length?`${label(data.source)} → ${label(data.target)} · ${s.path.length-1} moves`:'The route turns green when your method polls the goal.';
+ $('segments').textContent=s.path.length?s.path.map((id,i)=>i===0?label(id):` → [${data.roads.find(e=>e[0]===s.path[i-1]&&e[1]===id)[2]}] → ${label(id)}`).join(''):s.done?'No route.':'Waiting for the goal.';
+ $('back').disabled=index===0;for(const id of ['next','nextChoice','finish','play'])$(id).disabled=index===frames.length-1;$('reset').disabled=false;
+}
+function validateTrace(d){
+ if(!d||d.version!==1||d.algorithm!=='astar'||!Array.isArray(d.grid)||!d.grid.length||!Array.isArray(d.grid[0])||!d.grid[0].length)throw Error('Choose an A* recording from Astar.main.');
+ const integer=v=>Number.isSafeInteger(v)&&v>=0,n=d.nodes?.length,id=v=>integer(v)&&v<n,optional=v=>v===null||id(v);
+ if(!d.grid.every(row=>Array.isArray(row)&&row.length===d.grid[0].length&&row.every(v=>v===0||v===1))||!Array.isArray(d.nodes)||!n||!d.nodes.every(p=>p&&integer(p.row)&&integer(p.col)&&d.grid[p.row]?.[p.col]===0&&integer(p.h))||!id(d.source)||!id(d.target))throw Error('Invalid grid or nodes.');
+ const entry=q=>q&&id(q.node)&&integer(q.g)&&integer(q.h)&&integer(q.f)&&q.f===q.g+q.h;
+ if(!Array.isArray(d.roads)||!d.roads.every(e=>Array.isArray(e)&&e.length===3&&id(e[0])&&id(e[1])&&integer(e[2])))throw Error('Invalid edges.');
+ if(!Array.isArray(d.frames)||!d.frames.length||!d.frames.every(s=>s&&typeof s.event==='string'&&typeof s.message==='string'&&typeof s.done==='boolean'&&(s.selected===null||entry(s.selected))&&optional(s.neighbor)&&Array.isArray(s.dist)&&s.dist.length===n&&s.dist.every(v=>v===null||integer(v))&&Array.isArray(s.prev)&&s.prev.length===n&&s.prev.every(optional)&&Array.isArray(s.visited)&&s.visited.every(id)&&Array.isArray(s.queue)&&s.queue.every(entry)&&Array.isArray(s.path)&&s.path.every(id)&&s.path.every((v,i)=>i===0||d.roads.some(e=>e[0]===s.path[i-1]&&e[1]===v))))throw Error('Invalid recorded steps.');
+ return d;
+}
+function loadTrace(recording){validateTrace(recording);stop();data=recording;frames=data.frames;index=0;$('loadStatus').className='small';$('loadStatus').textContent=`Loaded Java A* recording · ${frames.length} steps. No recalculation in the browser.`;$('endpoints').textContent=`Start ${label(data.source)} → Goal ${label(data.target)}`;render();}
+function next(){if(index<frames.length-1)index++;if(index===frames.length-1)stop();render();}
+$('load').onclick=e=>{e.target.value='';};
+$('load').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{loadTrace(JSON.parse(await file.text()));}catch(error){$('loadStatus').className='small error';$('loadStatus').textContent='Could not load recording: '+error.message;}};
+$('next').onclick=()=>{stop();next();};$('back').onclick=()=>{stop();index=Math.max(0,index-1);render();};$('reset').onclick=()=>{stop();index=0;render();};
+$('nextChoice').onclick=()=>{stop();do{index++;}while(index<frames.length-1&&frames[index].event!=='poll');index=Math.min(index,frames.length-1);render();};
+$('finish').onclick=()=>{stop();index=frames.length-1;render();};
+$('play').onclick=()=>{if(timer){stop();return;}$('play').textContent='Pause';timer=setInterval(next,+$('speed').value);};
+$('speed').onchange=()=>{if(timer){stop();$('play').click();}};
+document.addEventListener('keydown',e=>{if(!frames.length||/SELECT|INPUT|BUTTON/.test(e.target.tagName))return;if(e.key==='ArrowRight'||e.key.toLowerCase()==='y'){e.preventDefault();$('next').click();}else if(e.key==='ArrowLeft'){e.preventDefault();$('back').click();}});
+</script>
+</html>
